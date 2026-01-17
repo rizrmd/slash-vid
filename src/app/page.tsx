@@ -1,9 +1,7 @@
-"use client";
-
-import { EditorLayout } from "@/components/editor/layout";
+import { Dashboard } from "@/components/dashboard/dashboard";
 
 export default function Home() {
   return (
-    <EditorLayout />
+    <Dashboard />
   );
 }

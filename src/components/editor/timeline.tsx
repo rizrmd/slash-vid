@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2 } from "lucide-react";
+import { Play, Pause, FastForward, Trash2 } from "lucide-react";
 import { TimelineThumbnails } from "./timeline-thumbnails";
 
 export const Timeline = () => {
@@ -16,7 +16,11 @@ export const Timeline = () => {
         keys,
         addKey,
         removeKey,
-        setKeys
+        setKeys,
+        isPlaying,
+        setIsPlaying,
+        previewMode,
+        setPreviewMode
     } = useEditorStore();
 
     const [intervalFPS, setIntervalFPS] = useState(1);
@@ -143,8 +147,29 @@ export const Timeline = () => {
 
             {/* Controls */}
             <div className="flex items-center gap-4 justify-between">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Double-click to add. Click key to select (Shift+Click for multi).</span>
+                <div className="flex items-center gap-1">
+                    <Button
+                        size="sm"
+                        variant={isPlaying ? "secondary" : "default"}
+                        onClick={() => {
+                            setPreviewMode(false);
+                            setIsPlaying(!isPlaying);
+                        }}
+                    >
+                        {isPlaying ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+                        {isPlaying ? "Pause" : "Play"}
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        variant={previewMode ? "secondary" : "outline"}
+                        onClick={() => setPreviewMode(!previewMode)}
+                        disabled={keys.length === 0}
+                        className={cn(previewMode && "bg-primary text-primary-foreground hover:bg-primary/90")}
+                    >
+                        <FastForward className="w-4 h-4 mr-2" />
+                        Preview Keyframes
+                    </Button>
                 </div>
 
                 <div className="flex items-center gap-2">

@@ -9,7 +9,10 @@ export const VideoPreview = () => {
         isPlaying,
         setIsPlaying,
         setCurrentTime,
-        setVideoMetadata
+        setVideoMetadata,
+        previewMode,
+        keys,
+        exportFps
     } = useEditorStore();
 
     // Sync Video Element -> Store (Time/End)
@@ -47,10 +50,7 @@ export const VideoPreview = () => {
         if (!video || !videoUrl) return;
 
         if (Math.abs(video.currentTime - currentTime) > 0.5) {
-            // Only seek if difference is significant to avoid fighting updates
-            // video.currentTime = currentTime; 
-            // Note: syncing exact frame is tricky. 
-            // Let's rely on native controls mostly, and only seek if driven by timeline click (large delta)
+            // Only seek if difference is significant
         }
     }, [currentTime, videoUrl]);
 
@@ -64,24 +64,45 @@ export const VideoPreview = () => {
         }
     }, [isPlaying]);
 
-    // Handle Timeline Seeking (Store -> Video)
-    // We need a specific "seek" action or check delta.
-    // A common pattern is to track "user is dragging timeline" state which creates a source of truth for time.
-    // For now let's just expose a function ref or rely on the store.
-
-    // We can force seek if the time change came from outside (not the video itself).
-    // But distinguishing source is hard here. 
-    // Simplified: If video is paused, we assume time changes are seeking.
-
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        // If paused, allow precise seeking
-        if (video.paused && Math.abs(video.currentTime - currentTime) > 0.1) {
+        // If paused or in preview mode, allow precise seeking
+        if ((video.paused || previewMode) && Math.abs(video.currentTime - currentTime) > 0.01) {
             video.currentTime = currentTime;
         }
-    }, [currentTime]);
+    }, [currentTime, previewMode]);
+
+    // Preview Mode Logic
+    useEffect(() => {
+        if (!previewMode || keys.length === 0) return;
+
+        let timeoutId: NodeJS.Timeout;
+
+        const playNextFrame = () => {
+            // Find current key index
+            let currentIndex = keys.findIndex(k => Math.abs(k - currentTime) < 0.05);
+
+            if (currentIndex === -1) {
+                currentIndex = keys.findIndex(k => k > currentTime);
+                if (currentIndex === -1) currentIndex = -1; // Will loop to 0
+            }
+
+            let nextIndex = currentIndex + 1;
+            if (nextIndex >= keys.length) nextIndex = 0;
+
+            const nextTime = keys[nextIndex];
+            setCurrentTime(nextTime);
+
+            const msPerFrame = 1000 / exportFps;
+            timeoutId = setTimeout(playNextFrame, msPerFrame);
+        };
+
+        timeoutId = setTimeout(playNextFrame, 1000 / exportFps);
+
+        return () => clearTimeout(timeoutId);
+    }, [previewMode, keys, currentTime, exportFps, setCurrentTime]);
 
     if (!videoUrl) {
         return (
@@ -105,13 +126,18 @@ export const VideoPreview = () => {
     }
 
     return (
-        <div className="relative w-full h-full flex items-center justify-center bg-black rounded-lg overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center bg-black rounded-lg overflow-hidden group">
             <video
                 ref={videoRef}
                 src={videoUrl}
                 className="max-h-full max-w-full object-contain"
-                controls={true} // Use native controls for now
+                controls={!previewMode} // Hide native controls in preview mode
             />
+            {previewMode && (
+                <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium shadow-lg z-10 animate-pulse">
+                    Previewing Keyframes ({exportFps} FPS)
+                </div>
+            )}
         </div>
     );
 };

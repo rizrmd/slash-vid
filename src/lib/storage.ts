@@ -10,8 +10,12 @@ export interface VideoProject {
     createdAt: number;
     updatedAt: number;
     duration: number;
-    fileHandle?: File; // We store the File object directly (idb supports it)
-    thumbnail?: string; // Data URL of a frame
+    fileHandle?: File;
+    thumbnail?: string;
+    keys: number[];
+    exportFps: number;
+    exportWidth?: number;
+    exportHeight?: number;
 }
 
 export const StorageService = {
@@ -34,7 +38,9 @@ export const StorageService = {
             updatedAt: Date.now(),
             duration: 0,
             fileHandle: file,
-            thumbnail: thumb
+            thumbnail: thumb,
+            keys: [],
+            exportFps: 10
         };
 
         await set(`project-${id}`, project);

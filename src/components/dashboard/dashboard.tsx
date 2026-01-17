@@ -6,23 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, Film } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+
 export const Dashboard = () => {
-    const { setVideo } = useEditorStore();
+    const { setVideo, loadProject } = useEditorStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             const file = e.target.files[0];
             // Persist immediately
             const project = await StorageService.saveProject(file);
-            setVideo(file, project.id, project.name);
+            router.push(`/editor/${project.id}`);
         }
     };
 
     const handleProjectSelect = (project: VideoProject) => {
-        if (project.fileHandle) {
-            setVideo(project.fileHandle, project.id, project.name);
-        }
+        router.push(`/editor/${project.id}`);
     };
 
     return (
