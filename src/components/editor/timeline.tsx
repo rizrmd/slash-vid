@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useState } from "react";
 import { useEditorStore } from "@/store/editor-store";
 import { cn } from "@/lib/utils";

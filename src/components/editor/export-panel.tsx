@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { useEditorStore } from "@/store/editor-store";
 import { FFmpegService } from "@/lib/ffmpeg";

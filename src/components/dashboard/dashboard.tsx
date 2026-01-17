@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef } from "react";
 import { RecentFiles } from "./recent-files";
 import { useEditorStore } from "@/store/editor-store";

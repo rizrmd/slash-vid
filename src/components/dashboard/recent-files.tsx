@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { StorageService, VideoProject } from "@/lib/storage";
 import { formatDistanceToNow } from "date-fns";

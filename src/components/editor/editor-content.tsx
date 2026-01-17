@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import { VideoPreview } from "./video-preview";
 import { Timeline } from "./timeline";
