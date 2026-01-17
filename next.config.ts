@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: process.env.NODE_ENV === "production" ? "/slash-vid" : "",
+  // basePath: process.env.NODE_ENV === "production" ? "/slash-vid" : "",
 
   // Headers only work in `next dev` or `next start`, ignored in `output: export`
   async headers() {
