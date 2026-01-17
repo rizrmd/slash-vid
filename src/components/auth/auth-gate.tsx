@@ -65,9 +65,6 @@ export const AuthGate = ({ children }: { children: React.ReactNode }) => {
                             <Button type="submit" className="w-full">
                                 Enter
                             </Button>
-                            <p className="text-xs text-center text-muted-foreground">
-                                Hint: vidadmin
-                            </p>
                         </form>
                     </CardContent>
                 </Card>
