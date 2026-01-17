@@ -203,7 +203,7 @@ export const Timeline = () => {
                         <div
                             key={time}
                             className={cn(
-                                "absolute top-0 bottom-0 -translate-x-1/2 w-1 z-10 hover:w-2 transition-all cursor-grab active:cursor-grabbing",
+                                "absolute top-0 bottom-0 -translate-x-1/2 w-1 z-10 transition-colors cursor-grab active:cursor-grabbing group/key",
                                 isSelected ? "bg-primary z-50 w-1.5" : "bg-yellow-400 hover:bg-yellow-300",
                                 draggingKey?.original === time && "opacity-50"
                             )}
@@ -214,7 +214,7 @@ export const Timeline = () => {
                         >
                             <div className={cn(
                                 "absolute top-0 -translate-x-1/3 rounded-b-sm border shadow-sm transition-colors",
-                                isSelected ? "w-4 h-4 bg-primary border-primary-foreground" : "w-3 h-3 bg-yellow-500"
+                                isSelected ? "w-4 h-4 bg-primary border-primary-foreground" : "w-3 h-3 bg-yellow-500 group-hover/key:bg-yellow-300"
                             )} />
                         </div>
                     );
