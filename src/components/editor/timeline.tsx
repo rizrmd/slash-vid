@@ -150,9 +150,30 @@ export const Timeline = () => {
                 <div className="flex items-center gap-2">
                     {/* Delete Selected Button */}
                     {selectedKeys.size > 0 && (
-                        <Button size="sm" variant="destructive" onClick={handleDeleteSelected} className="animate-in fade-in slide-in-from-top-1">
-                            <Trash2 className="w-4 h-4 mr-2" /> Delete {selectedKeys.size} Selected
-                        </Button>
+                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                            {selectedKeys.size === 1 && (
+                                <Input
+                                    type="number"
+                                    className="w-20 h-8"
+                                    step="0.001"
+                                    min={0}
+                                    max={videoDuration}
+                                    value={[...selectedKeys][0]}
+                                    onChange={(e) => {
+                                        const oldTime = [...selectedKeys][0];
+                                        const newTime = Math.min(Math.max(0, Number(e.target.value)), videoDuration);
+                                        if (oldTime === newTime) return;
+
+                                        removeKey(oldTime);
+                                        addKey(newTime);
+                                        setSelectedKeys(new Set([newTime]));
+                                    }}
+                                />
+                            )}
+                            <Button size="sm" variant="destructive" onClick={handleDeleteSelected}>
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete {selectedKeys.size > 1 ? `${selectedKeys.size} Selected` : "Selected"}
+                            </Button>
+                        </div>
                     )}
 
                     <div className="h-6 w-px bg-border mx-2" />
