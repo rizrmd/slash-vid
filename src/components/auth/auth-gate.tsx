@@ -8,7 +8,7 @@ import { Lock } from "lucide-react";
 
 const AUTH_KEY = "slashvid-auth";
 // Simple password, not secure against viewing source, but blocks casual access as requested.
-const PASSWORD = "demo";
+const PASSWORD = "vidadmin";
 
 export const AuthGate = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,7 +66,7 @@ export const AuthGate = ({ children }: { children: React.ReactNode }) => {
                                 Enter
                             </Button>
                             <p className="text-xs text-center text-muted-foreground">
-                                Hint: demo
+                                Hint: vidadmin
                             </p>
                         </form>
                     </CardContent>
