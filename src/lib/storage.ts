@@ -92,6 +92,14 @@ export const StorageService = {
         await set(`project-${project.id}`, { ...project, updatedAt: Date.now() });
     },
 
+    async renameProject(id: string, name: string): Promise<void> {
+        const project = await this.getProject(id);
+        if (project) {
+            project.name = name;
+            await this.updateProject(project);
+        }
+    },
+
     async getProjects(): Promise<VideoProject[]> {
         const allKeys = await keys();
         const projectKeys = allKeys.filter(k => typeof k === 'string' && k.startsWith('project-'));

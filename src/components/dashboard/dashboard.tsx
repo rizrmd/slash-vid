@@ -14,14 +14,14 @@ export const Dashboard = () => {
         if (e.target.files?.[0]) {
             const file = e.target.files[0];
             // Persist immediately
-            await StorageService.saveProject(file);
-            setVideo(file);
+            const project = await StorageService.saveProject(file);
+            setVideo(file, project.id, project.name);
         }
     };
 
     const handleProjectSelect = (project: VideoProject) => {
         if (project.fileHandle) {
-            setVideo(project.fileHandle);
+            setVideo(project.fileHandle, project.id, project.name);
         }
     };
 

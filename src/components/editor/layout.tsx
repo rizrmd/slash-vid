@@ -9,12 +9,25 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useEditorStore } from "@/store/editor-store";
 
+import { Input } from "@/components/ui/input";
+import { StorageService } from "@/lib/storage";
+
 export const EditorLayout = () => {
-    const { videoUrl, reset } = useEditorStore();
+    const { videoUrl, reset, projectName, setProjectName, projectId } = useEditorStore();
 
     if (!videoUrl) {
         return <Dashboard />;
     }
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setProjectName(e.target.value);
+    };
+
+    const handleNameSave = () => {
+        if (projectId && projectName.trim()) {
+            StorageService.renameProject(projectId, projectName);
+        }
+    };
 
     return (
         <div className="flex h-screen w-full bg-background overflow-hidden state-editor">
@@ -24,7 +37,15 @@ export const EditorLayout = () => {
                     <Button variant="ghost" size="sm" onClick={reset}>
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back
                     </Button>
-                    <h1 className="font-semibold text-lg">Editor</h1>
+                    <div className="flex-1 max-w-[300px]">
+                        <Input
+                            value={projectName}
+                            onChange={handleNameChange}
+                            onBlur={handleNameSave}
+                            onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+                            className="h-8 font-semibold bg-transparent border-transparent hover:border-input focus:border-input px-2 transition-all"
+                        />
+                    </div>
                 </header>
 
                 <main className="flex-1 relative flex flex-col overflow-hidden">

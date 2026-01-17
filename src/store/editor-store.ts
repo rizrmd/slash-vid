@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
 interface EditorState {
+    projectId: string | null;
+    projectName: string;
     videoUrl: string | null;
     videoFile: File | null;
     videoDuration: number;
@@ -17,7 +19,8 @@ interface EditorState {
     exportHeight: number | null;
 
     // Actions
-    setVideo: (file: File) => void;
+    setVideo: (file: File, id?: string, name?: string) => void;
+    setProjectName: (name: string) => void;
     setVideoMetadata: (duration: number, width: number, height: number) => void;
     addKey: (timestamp: number) => void;
     removeKey: (timestamp: number) => void;
@@ -28,7 +31,9 @@ interface EditorState {
     reset: () => void;
 }
 
-export const useEditorStore = create<EditorState>((set) => ({
+export const useEditorStore = create<EditorState>((set, get) => ({
+    projectId: null,
+    projectName: "Untitled Project",
     videoUrl: null,
     videoFile: null,
     videoDuration: 0,
@@ -42,9 +47,26 @@ export const useEditorStore = create<EditorState>((set) => ({
     exportWidth: null,
     exportHeight: null,
 
-    setVideo: (file) => {
+    setVideo: (file, id, name) => {
         const url = URL.createObjectURL(file);
-        set({ videoFile: file, videoUrl: url, keys: [], currentTime: 0, isPlaying: false });
+        set({
+            videoFile: file,
+            videoUrl: url,
+            projectId: id || null,
+            projectName: name || file.name,
+            keys: [],
+            currentTime: 0,
+            isPlaying: false
+        });
+    },
+
+    setProjectName: (name) => {
+        set({ projectName: name });
+        // Update storage if we have an ID (which we should for persisted projects)
+        // Since store shouldn't probably depend directly on StorageService for side effects typically, 
+        // but for simplicity here we might want to do it or let the component handle the persistence.
+        // Let's keep store handling state, component handling persistence side-effect, OR do it here.
+        // Doing it here requires importing StorageService.
     },
 
     setVideoMetadata: (duration, width, height) => set({ videoDuration: duration, videoDimensions: { width, height } }),
@@ -71,6 +93,8 @@ export const useEditorStore = create<EditorState>((set) => ({
     })),
 
     reset: () => set({
+        projectId: null,
+        projectName: "Untitled Project",
         videoUrl: null,
         videoFile: null,
         videoDuration: 0,
