@@ -22,12 +22,21 @@ export const Timeline = () => {
     const [intervalFPS, setIntervalFPS] = useState(1);
 
     // Dragging Logic
+    const [selectedKeys, setSelectedKeys] = useState<Set<number>>(new Set());
+
+    // Dragging Logic
     const [draggingKey, setDraggingKey] = useState<{ original: number | null, current: number } | null>(null);
 
     const timeToPercent = (time: number) => (time / videoDuration) * 100;
 
     const handleTimelineClick = (e: React.MouseEvent) => {
         if (!containerRef.current || draggingKey) return;
+
+        // Clear selection if clicking empty space (unless modifier held)
+        if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
+            setSelectedKeys(new Set());
+        }
+
         const rect = containerRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const percentage = x / rect.width;
@@ -46,9 +55,37 @@ export const Timeline = () => {
         const closeKey = keys.find(k => Math.abs(k - time) < (videoDuration * 0.02)); // 2% tolerance
         if (closeKey !== undefined) {
             removeKey(closeKey);
+            // Also remove from selection if present
+            const newSel = new Set(selectedKeys);
+            newSel.delete(closeKey);
+            setSelectedKeys(newSel);
         } else {
             addKey(Number(time.toFixed(3)));
         }
+    };
+
+    const handleKeyClick = (e: React.MouseEvent, time: number) => {
+        e.stopPropagation(); // Prevent timeline seek/clear
+
+        const newSel = new Set(selectedKeys);
+        if (e.shiftKey || e.metaKey || e.ctrlKey) {
+            if (newSel.has(time)) newSel.delete(time);
+            else newSel.add(time);
+        } else {
+            // Single select
+            newSel.clear();
+            newSel.add(time);
+        }
+        setSelectedKeys(newSel);
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedKeys.size === 0) return;
+
+        // Batch remove
+        const newKeys = keys.filter(k => !selectedKeys.has(k));
+        setKeys(newKeys);
+        setSelectedKeys(new Set());
     };
 
     const handleGenerateInterval = () => {
@@ -61,11 +98,18 @@ export const Timeline = () => {
         setKeys(newKeys);
     };
 
-    const handleClearKeys = () => setKeys([]);
+    const handleClearKeys = () => {
+        setKeys([]);
+        setSelectedKeys(new Set());
+    };
 
     // Drag Key Handlers
     const handleDragStart = (e: React.MouseEvent, time: number) => {
         e.stopPropagation();
+        // If dragging a key that isn't selected, select it exclusively
+        if (!selectedKeys.has(time)) {
+            setSelectedKeys(new Set([time]));
+        }
         setDraggingKey({ original: time, current: time });
     };
 
@@ -81,8 +125,15 @@ export const Timeline = () => {
         if (draggingKey) {
             if (draggingKey.original !== null) {
                 removeKey(draggingKey.original);
+                // Update selection to tracking new key if it was selected
+                const newSel = new Set(selectedKeys);
+                newSel.delete(draggingKey.original);
+
+                const newTime = Number(draggingKey.current.toFixed(3));
+                addKey(newTime);
+                newSel.add(newTime);
+                setSelectedKeys(newSel);
             }
-            addKey(Number(draggingKey.current.toFixed(3)));
             setDraggingKey(null);
         }
     };
@@ -93,10 +144,19 @@ export const Timeline = () => {
             {/* Controls */}
             <div className="flex items-center gap-4 justify-between">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Double-click timeline to add/remove keys. Drag keys to move.</span>
+                    <span>Double-click to add. Click key to select (Shift+Click for multi).</span>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Delete Selected Button */}
+                    {selectedKeys.size > 0 && (
+                        <Button size="sm" variant="destructive" onClick={handleDeleteSelected} className="animate-in fade-in slide-in-from-top-1">
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete {selectedKeys.size} Selected
+                        </Button>
+                    )}
+
+                    <div className="h-6 w-px bg-border mx-2" />
+
                     <Label className="whitespace-nowrap">Interval (sec):</Label>
                     <Input
                         type="number"
@@ -109,8 +169,8 @@ export const Timeline = () => {
                     <Button size="sm" variant="outline" onClick={handleGenerateInterval}>
                         Set Interval
                     </Button>
-                    <Button size="icon" variant="destructive" onClick={handleClearKeys}>
-                        <Trash2 className="w-4 h-4" />
+                    <Button size="icon" variant="ghost" onClick={handleClearKeys} title="Clear All">
+                        <Trash2 className="w-4 h-4 text-muted-foreground" />
                     </Button>
                 </div>
             </div>
@@ -137,21 +197,28 @@ export const Timeline = () => {
                 </div>
 
                 {/* Keys */}
-                {keys.map((time) => (
-                    <div
-                        key={time}
-                        className={cn(
-                            "absolute top-0 bottom-0 -translate-x-1/2 w-1 bg-yellow-400 z-10 hover:w-2 transition-all cursor-grab active:cursor-grabbing hover:bg-yellow-300",
-                            draggingKey?.original === time && "opacity-50"
-                        )}
-                        style={{ left: `${timeToPercent(time)}%` }}
-                        onMouseDown={(e) => handleDragStart(e, time)}
-                        onClick={(e) => e.stopPropagation()} // Prevent seek trigger
-                        title={`Keyframe at ${time}s`}
-                    >
-                        <div className="absolute top-0 w-3 h-3 bg-yellow-500 -translate-x-1/3 rounded-b-sm border shadow-sm" />
-                    </div>
-                ))}
+                {keys.map((time) => {
+                    const isSelected = selectedKeys.has(time);
+                    return (
+                        <div
+                            key={time}
+                            className={cn(
+                                "absolute top-0 bottom-0 -translate-x-1/2 w-1 z-10 hover:w-2 transition-all cursor-grab active:cursor-grabbing",
+                                isSelected ? "bg-primary z-50 w-1.5" : "bg-yellow-400 hover:bg-yellow-300",
+                                draggingKey?.original === time && "opacity-50"
+                            )}
+                            style={{ left: `${timeToPercent(time)}%` }}
+                            onMouseDown={(e) => handleDragStart(e, time)}
+                            onClick={(e) => handleKeyClick(e, time)}
+                            title={`Keyframe at ${time}s`}
+                        >
+                            <div className={cn(
+                                "absolute top-0 -translate-x-1/3 rounded-b-sm border shadow-sm transition-colors",
+                                isSelected ? "w-4 h-4 bg-primary border-primary-foreground" : "w-3 h-3 bg-yellow-500"
+                            )} />
+                        </div>
+                    );
+                })}
 
                 {/* Dragging Preview */}
                 {draggingKey && (
