@@ -20,12 +20,12 @@ export const Dashboard = () => {
             const file = e.target.files[0];
             // Persist immediately
             const project = await StorageService.saveProject(file);
-            router.push(`/editor/${project.id}`);
+            router.push(`/editor?id=${project.id}`);
         }
     };
 
     const handleProjectSelect = (project: VideoProject) => {
-        router.push(`/editor/${project.id}`);
+        router.push(`/editor?id=${project.id}`);
     };
 
     return (

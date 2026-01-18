@@ -1,19 +1,25 @@
 "use client";
 
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState } from "react";
 import { EditorContent } from "@/components/editor/editor-content";
 import { StorageService } from "@/lib/storage";
 import { useEditorStore } from "@/store/editor-store";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
+export default function EditorPage() {
+    const searchParams = useSearchParams();
+    const id = searchParams.get("id");
     const { loadProject, reset } = useEditorStore();
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
+        if (!id) {
+            router.push("/");
+            return;
+        }
+
         const fetchProject = async () => {
             setLoading(true);
             try {
