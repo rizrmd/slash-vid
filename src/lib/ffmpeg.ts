@@ -20,11 +20,11 @@ export class FFmpegService {
     public async load(): Promise<void> {
         if (this.loaded) return;
 
-        const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+        const baseURL = window.location.origin + "/ffmpeg";
 
         await this.ffmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+            coreURL: `${baseURL}/ffmpeg-core.js`,
+            wasmURL: `${baseURL}/ffmpeg-core.wasm`,
         });
 
         this.loaded = true;
